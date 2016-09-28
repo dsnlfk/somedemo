@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+    <title>Document</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    
+    html {
+        height: 100%;
+    }
+    
+    body {
+        height: 100%;
+    }
+    
+    .vpar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: rgba(170, 170, 170, 0.5);
+        z-index: 0;
+    }
+    
+    #video {
+        /*display: none;*/
+        position: absolute;
+        left: 50%;
+        -webkit-transform: translate(-50%, 0);
+        z-index: 0;
+    }
+    
+    #canvas {
+        position: relative;
+        margin-top: 70%;
+    }
+    
+    .item {
+        position: absolute;
+        top: 50px;
+        left: 30px;
+        color: #ff0000;
+        z-index: 999 !important;
+    }
+    
+    .a {
+        top: 500px;
+    }
+    
+    .b {
+        top: 500px;
+        left: 200px;
+    }
+    
+    #snapButton {
+        top: 490px;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="vpar" class="vpar">
+        <video id="video" width="640" height="200" autoplay></video>
+    </div>
+    <button id="snapButton" class="item">Snap Photo fff</button>
+    <canvas id="canvas" width="320" height="400"></canvas>
+    <div id="a" class="item a">aaa</div>
+    <select id="videoSource" class="item b"></select>
+    <div id="c" class="item c">ccc</div>
+    <div id="d" class="item d">ddd</div>
+    <div id="e" class="item e">eee</div>
+    <div id="g" class="item g">ggg</div>
+    <script type="text/javascript" src="https://image.uc.cn/s/uae/g/01/test/ccv.js"></script>
+    <script type="text/javascript" src="https://image.uc.cn/s/uae/g/01/test/face.js"></script>
+    <script>
+    var video = document.getElementById('video');
+    var videoSelect = document.getElementById('videoSource');
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var video = document.getElementById('video');
+    var t;
+
+    var mediaConfig = {
+        video: true
+    };
+    var errBack = function(e) {
+        console.log('An error has occurred!', e)
+    };
+
+
+    function camera() {
+        // Get access to the camera!
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            //pc
+            navigator.mediaDevices.getUserMedia({
+                video: true
+            }).then(function(stream) {
+
+                successCallback(window.URL.createObjectURL(stream));
+            });
+        }
+        /* Legacy code below! */
+        else if (navigator.getUserMedia) { // Standard
+            navigator.getUserMedia(mediaConfig, function(stream) {
+                video.src = stream;
+                video.play();
+                MediaStreamTrack.getSources(gotSources);
+
+            }, errBack);
+        } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
+            //uc
+            navigator.webkitGetUserMedia(mediaConfig, function(stream) {
+                successCallback(window.webkitURL.createObjectURL(stream));
+            }, errBack);
+        } else if (navigator.mozGetUserMedia) { // Mozilla-prefixed
+            navigator.mozGetUserMedia(mediaConfig, function(stream) {
+                video.src = window.URL.createObjectURL(stream);
+                video.play();
+                MediaStreamTrack.getSources(gotSources);
+
+            }, errBack);
+        } else {
+            alert('none')
+        }
+        // clearInterval(t)
+        // t = setInterval(function() {
+        //     ctx.drawImage(video, 0, 0, 320, 400);
+        // }, 200)
+    }
+
+    function gotSources(sourceInfos) {
+        console.log(sourceInfos)
+        for (var i = 0; i !== sourceInfos.length; ++i) {
+            var sourceInfo = sourceInfos[i];
+            var option = document.createElement('option');
+            option.value = sourceInfo.id;
+            if (sourceInfo.kind === 'video') {
+                option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
+                videoSelect.appendChild(option);
+            }
+        }
+    }
+
+    function successCallback(url) {
+        video.src = url;
+        video.play();
+        // MediaStreamTrack.getSources(gotSources);
+        detect()
+    }
+
+
+
+    function detect() {
+        ctx.drawImage(video, 0, 0, 320, 400);
+        var faceList = faceDetect()
+        faceLabel(faceList)
+        setTimeout(detect)
+    }
+
+    function faceDetect() {
+        return ccv.detect_objects({
+            "canvas": (ccv.pre(canvas)),
+            "cascade": cascade,
+            "interval": 5,
+            "min_neighbors": 1
+        })
+    }
+
+    function faceLabel(faceList) {
+        for (var i = 0; i < faceList.length; ++i) {
+            var face = faceList[i]
+            ctx.beginPath()
+            ctx.strokeStyle = '#FF4200'
+            ctx.lineWidth = 2
+            ctx.strokeRect(face.x, face.y, face.width, face.height)
+            ctx.closePath()
+            ctx.stroke()
+        }
+    }
+
+
+
+    camera();
+
+
+    </script>
+</body>
+
+</html>

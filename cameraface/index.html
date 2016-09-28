@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!-- saved from url=(0041)http://localhost/facedetectioin/test.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#fff">
+    <!--<base target="_blank">--><base href="." target="_blank">
+    <title>人脸识别 DEMO</title>
+    <style>
+    div.select {
+        margin: 0 0 1em 0;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h1>
+          人脸识别 DEMO
+        </h1>
+        <div class="select">
+            <label for="videoSource">Video source: </label>
+            <select id="videoSource"><option value="fed751099f7bcdee379c335f7655a8a29a164f7045fea8c6498e844718de0d9b">FaceTime HD Camera</option></select>
+        </div>
+        <video muted="" autoplay="" style="display:block;width: 500px;height: 375px;"></video>
+        <canvas id="algorithm-input" width="500" height="375"></canvas>
+    </div>
+    <script type="text/javascript" src="./js/ccv.js"></script>
+    <script type="text/javascript" src="./js/face.js"></script>
+    <script type="text/javascript">
+    'use strict';
+
+    var videoElement = document.querySelector('video');
+    var videoSelect = document.querySelector('select#videoSource');
+
+    navigator.getUserMedia = navigator.getUserMedia ||
+        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+    function gotSources(sourceInfos) {
+        console.log(sourceInfos)
+        
+        for (var i = 0; i !== sourceInfos.length; ++i) {
+            var sourceInfo = sourceInfos[i];
+            var option = document.createElement('option');
+            option.value = sourceInfo.id;
+            if (sourceInfo.kind === 'video') {
+                option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
+                videoSelect.appendChild(option);
+            }
+        }
+    }
+
+    if (typeof MediaStreamTrack === 'undefined' ||
+        typeof MediaStreamTrack.getSources === 'undefined') {
+        alert('This browser does not support MediaStreamTrack.\n\nTry Chrome.');
+    } else {
+        MediaStreamTrack.getSources(gotSources);
+    }
+
+    function successCallback(stream) {
+        videoElement.src = window.URL.createObjectURL(stream);
+        videoElement.play();
+        detect()
+    }
+
+    function errorCallback(error) {
+        console.log('navigator.getUserMedia error: ', error);
+    }
+
+    function start() {
+        if (window.stream) {
+            videoElement.src = null;
+            window.stream.stop();
+        }
+        var videoSource = videoSelect.value;
+        var constraints = {
+            video: {
+                optional: [{
+                    sourceId: videoSource
+                }]
+            }
+        };
+        navigator.getUserMedia(constraints, successCallback, errorCallback);
+    }
+
+    videoSelect.onchange = start;
+
+    start();
+
+    var canvas = document.getElementById('algorithm-input')
+    var ctx = canvas.getContext('2d')
+
+    function detect() {
+        ctx.drawImage(videoElement, 0, 0, 500, 375)
+        var faceList = faceDetect()
+        faceLabel(faceList)
+        setTimeout(detect)
+    }
+
+    function faceDetect() {
+        return ccv.detect_objects({
+            "canvas": (ccv.pre(canvas)),
+            "cascade": cascade,
+            "interval": 5,
+            "min_neighbors": 1
+        })
+    }
+
+    function faceLabel(faceList) {
+        for (var i = 0; i < faceList.length; ++i) {
+            var face = faceList[i]
+            ctx.beginPath()
+            ctx.strokeStyle = '#FF4200'
+            ctx.lineWidth = 2
+            ctx.strokeRect(face.x, face.y, face.width, face.height)
+            ctx.closePath()
+            ctx.stroke()
+        }
+    }
+    </script>
+
+
+
+</body></html>
