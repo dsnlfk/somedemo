@@ -19,9 +19,8 @@ canvas 编辑交互 video 内容
 ```
 
 资料
+---
 
-```
-[摄像头](https://davidwalsh.name/demo/camera.php)
-[摄像头](https://davidwalsh.name/browser-camera)
-[脸部识别](https://github.com/liuliu/ccv)
-```
+[摄像头](https://davidwalsh.name/demo/camera.php)  
+[摄像头](https://davidwalsh.name/browser-camera)  
+[脸部识别](https://github.com/liuliu/ccv)  
