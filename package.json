@@ -1,0 +1,8 @@
+{
+  "name": "somedemo",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "smt": "git add --all && git commit -m'mark' && git pull origin master && git status"
+  }
+}
