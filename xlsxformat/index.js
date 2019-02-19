@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const XLSX = require('xlsx');
-const reg = /\s+/g; // 2
+const reg = /\s+/g; // 3
 
 // 删除本地文件
 const deleteDir = path => {
